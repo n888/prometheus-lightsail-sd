@@ -30,8 +30,8 @@ scrape_configs:
 
   - job_name: node
   
-    # This config assumes that prometheus and prometheus-lightsail-sd are started from the same directory:
-  
+    # This config assumes that prometheus-lightsail-sd is installed as per examples/systemd/prometheus-lightsail-sd.service
+    
     file_sd_configs:
     - files: [ "/opt/prometheus-lightsail-sd/lightsail_sd.json" ]
   
