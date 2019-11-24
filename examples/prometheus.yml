@@ -1,0 +1,53 @@
+# my global config
+global:
+  scrape_interval:     1m
+  evaluation_interval: 1m
+  # scrape_timeout is set to the global default (10s).
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      # - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+    - targets: ['localhost:9090']
+
+  - job_name: node
+  
+    # This config assumes that prometheus and prometheus-lightsail-sd are started from the same directory:
+  
+    file_sd_configs:
+    - files: [ "/opt/prometheus-lightsail-sd/lightsail_sd.json" ]
+  
+    # The relabeling does the following:
+    # - overwrite the scrape address with the node_exporter's port.
+    # - add the value of the instance's custom tag named "service".
+    # - add the availability zone label.
+    # - overwrite the instance label with the server's name.
+    
+    relabel_configs:
+    - source_labels: [__meta_lightsail_private_ip]
+      replacement: "${1}:9100"
+      target_label: __address__
+    - source_labels: [__meta_lightsail_tag_service]
+      target_label: service
+    - source_labels: [__meta_lightsail_availability_zone]
+      target_label: availability_zone
+    - source_labels: [__meta_lightsail_name]
+      target_label: instance
