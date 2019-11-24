@@ -54,7 +54,7 @@ Flags:
       --profile="default"  AWS config named profile (under ~/.aws, can also be set by envvar: AWS_PROFILE=myProfileName)
 ```
 
-Example output:
+### Example output:
 
 ```
 $ ./prometheus-lightsail-sd --profile=myProfileName
@@ -65,7 +65,11 @@ level=debug ts=2019-11-20T08:56:31.355313346Z caller=main.go:123 msg="server add
 level=debug ts=2019-11-20T08:56:31.355479273Z caller=main.go:123 msg="server added" source=lightsail/n888.net
 ```
 
+### Prometheus /service-discovery example output
 ![Example Prometheus Service Discovery](img/prometheus-service-discovery-example.png)
+
+### Systemd service file example
+See [examples/systemd/prometheus-lightsail-sd.service](examples/systemd/prometheus-lightsail-sd.service)
 
 ## Integration with Prometheus
 
