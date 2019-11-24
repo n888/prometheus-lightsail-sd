@@ -115,9 +115,9 @@ The following meta labels are available on targets during relabeling:
 * `__meta_lightsail_tag_service="frontend"` instance tag, each tag gets its own label
 
 ```
-note: lightsail.Instance does not return an InstanceId (unlike EC2), but does provide a 
-"support code" string with the format of "${lightsail_account_id}/${instance_id}". This
-string is split and the ${instance_id} value is assigned to `instance_id` tag label.
+note: lightsail.Instance does not return an InstanceId (unlike EC2), but does provide a "support code"
+string with the format of "${lightsail_account_id}/${instance_id}". This string is split and the
+${instance_id} value is assigned to `instance_id` meta label.
 ```
 
 ## Contributing
