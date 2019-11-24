@@ -1,0 +1,18 @@
+[Unit]
+Description=prometheus-lightsail-sd
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=prometheus
+Group=prometheus
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/opt/prometheus-lightsail-sd/prometheus-lightsail-sd --profile=myProfileName
+WorkingDirectory=/opt/prometheus-lightsail-sd
+
+SyslogIdentifier=prometheus
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
