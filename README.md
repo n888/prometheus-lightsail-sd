@@ -65,6 +65,8 @@ level=debug ts=2019-11-20T08:56:31.355313346Z caller=main.go:123 msg="server add
 level=debug ts=2019-11-20T08:56:31.355479273Z caller=main.go:123 msg="server added" source=lightsail/n888.net
 ```
 
+![Example Prometheus Service Discovery](img/prometheus-service-discovery-example.png)
+
 ## Integration with Prometheus
 
 Here is a Prometheus `scrape_config` snippet that configures Prometheus to scrape node_exporter (TCP/9100) on discovered instances:
