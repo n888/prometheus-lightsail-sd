@@ -117,7 +117,7 @@ The following meta labels are available on targets during relabeling:
 ```
 note: lightsail.Instance does not return an InstanceId (unlike EC2), but does provide a "support code"
 string with the format of "${lightsail_account_id}/${instance_id}". This string is split and the
-${instance_id} value is assigned to `instance_id` meta label.
+${instance_id} value is assigned to the `instance_id` meta label.
 ```
 
 ## Contributing
