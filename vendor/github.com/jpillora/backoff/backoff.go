@@ -4,7 +4,6 @@ package backoff
 import (
 	"math"
 	"math/rand"
-	"sync/atomic"
 	"time"
 )
 
@@ -15,19 +14,19 @@ import (
 // Backoff is not generally concurrent-safe, but the ForAttempt method can
 // be used concurrently.
 type Backoff struct {
-	attempt uint64
-	// Factor is the multiplying factor for each increment step
-	Factor float64
-	// Jitter eases contention by randomizing backoff steps
+	//Factor is the multiplying factor for each increment step
+	attempt, Factor float64
+	//Jitter eases contention by randomizing backoff steps
 	Jitter bool
-	// Min and Max are the minimum and maximum values of the counter
+	//Min and Max are the minimum and maximum values of the counter
 	Min, Max time.Duration
 }
 
 // Duration returns the duration for the current attempt before incrementing
 // the attempt counter. See ForAttempt.
 func (b *Backoff) Duration() time.Duration {
-	d := b.ForAttempt(float64(atomic.AddUint64(&b.attempt, 1) - 1))
+	d := b.ForAttempt(b.attempt)
+	b.attempt++
 	return d
 }
 
@@ -81,12 +80,12 @@ func (b *Backoff) ForAttempt(attempt float64) time.Duration {
 
 // Reset restarts the current attempt counter at zero.
 func (b *Backoff) Reset() {
-	atomic.StoreUint64(&b.attempt, 0)
+	b.attempt = 0
 }
 
 // Attempt returns the current attempt counter value.
 func (b *Backoff) Attempt() float64 {
-	return float64(atomic.LoadUint64(&b.attempt))
+	return b.attempt
 }
 
 // Copy returns a backoff with equals constraints as the original
