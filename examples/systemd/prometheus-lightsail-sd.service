@@ -8,8 +8,7 @@ Type=simple
 User=prometheus
 Group=prometheus
 ExecReload=/bin/kill -HUP $MAINPID
-ExecStart=/opt/prometheus-lightsail-sd/prometheus-lightsail-sd --profile=myProfileName
-WorkingDirectory=/opt/prometheus-lightsail-sd
+ExecStart=/opt/prometheus-lightsail-sd/prometheus-lightsail-sd --output.file=/opt/prometheus-lightsail-sd/lightsail_sd.json --profile=myProfileName
 
 SyslogIdentifier=prometheus-lightsail-sd
 Restart=always
