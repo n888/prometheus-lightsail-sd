@@ -17,7 +17,7 @@ The profile name can be specified with either:
 More info: [AWS CLI - Named Profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html)
 
 ### IAM policy
-The following IAM Policy attached to the profile is required:
+The following IAM Policy needs to be attached to the named profile configured via the previous step:
 ```
 {
     "Version": "2012-10-17",
