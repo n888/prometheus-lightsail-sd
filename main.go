@@ -237,8 +237,6 @@ func main() {
 
 	level.Debug(logger).Log("msg", "listening for connections", "addr", *listen)
 	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
-	//http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{ErrorLog: level.Debug(logger)}))
-	//http.Handle("/metrics", promhttp.HandlerFor(reg, level.Debug(logger)))
 	if err := http.ListenAndServe(*listen, nil); err != nil {
 		level.Debug(logger).Log("msg", "failed to listen", "addr", *listen, "err", err)
 		os.Exit(1)
