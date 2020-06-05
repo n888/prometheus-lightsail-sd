@@ -98,6 +98,28 @@ type lightsailDiscoverer struct {
 }
 
 func (d *lightsailDiscoverer) createTarget(srv *lightsail.Instance) *targetgroup.Group {
+	// BEGIN debug
+	level.Debug(d.logger).Log("PrivateIpAddress", srv.PrivateIpAddress)
+	level.Debug(d.logger).Log("AvailabilityZone", srv.Location.AvailabilityZone)
+	level.Debug(d.logger).Log("BlueprintId", srv.BlueprintId)
+	level.Debug(d.logger).Log("BundleId", srv.BundleId)
+	level.Debug(d.logger).Log("instanceId", strings.Split(*srv.SupportCode, "/")[1])
+	level.Debug(d.logger).Log("Name", srv.Name)
+	level.Debug(d.logger).Log("PrivateIpAddress", srv.PrivateIpAddress)
+	level.Debug(d.logger).Log("PublicIpAddress", srv.PublicIpAddress)
+	level.Debug(d.logger).Log("State", srv.State.Name)
+	level.Debug(d.logger).Log("SupportCode", srv.SupportCode)
+        for _, t := range srv.Tags {
+                if t == nil || t.Key == nil || t.Value == nil {
+                        continue
+                }
+                level.Debug(d.logger).Log("tag-key", strutil.SanitizeLabelName(*t.Key), "tag-value", model.LabelValue(*t.Value))
+        }
+
+	// END debug
+
+
+
 	// create targetgroup
 	tg := &targetgroup.Group{
 		Source: fmt.Sprintf("lightsail/%s", *srv.Name),
