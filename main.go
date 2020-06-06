@@ -40,7 +40,7 @@ var (
 	outputFile = a.Flag("output.file", "Output file for file_sd compatible file.").Default("lightsail_sd.json").String()
 	refresh    = a.Flag("target.refresh", "The refresh interval (in seconds).").Default("60").Int()
 	profile    = a.Flag("profile", "AWS Profile").Default("default").String()
-	listen       = a.Flag("web.listen-address", "The listen address.").Default(":8383").String()
+	listen     = a.Flag("web.listen-address", "The listen address.").Default(":8383").String()
 
 	logger log.Logger
 	sess   client.ConfigProvider
@@ -89,7 +89,6 @@ func init() {
 	reg.MustRegister(requestFailures)
 }
 
-
 type lightsailDiscoverer struct {
 	client  *lightsail.Lightsail
 	refresh int
@@ -98,6 +97,7 @@ type lightsailDiscoverer struct {
 }
 
 func (d *lightsailDiscoverer) createTarget(srv *lightsail.Instance) *targetgroup.Group {
+
 	// BEGIN debug
 	level.Debug(d.logger).Log("PrivateIpAddress", srv.PrivateIpAddress)
 	level.Debug(d.logger).Log("AvailabilityZone", srv.Location.AvailabilityZone)
@@ -109,16 +109,20 @@ func (d *lightsailDiscoverer) createTarget(srv *lightsail.Instance) *targetgroup
 	level.Debug(d.logger).Log("PublicIpAddress", srv.PublicIpAddress)
 	level.Debug(d.logger).Log("State", srv.State.Name)
 	level.Debug(d.logger).Log("SupportCode", srv.SupportCode)
-        for _, t := range srv.Tags {
-                if t == nil || t.Key == nil || t.Value == nil {
-                        continue
-                }
-                level.Debug(d.logger).Log("tag-key", strutil.SanitizeLabelName(*t.Key), "tag-value", model.LabelValue(*t.Value))
-        }
+	for _, t := range srv.Tags {
+		if t == nil || t.Key == nil || t.Value == nil {
+			continue
+		}
+		level.Debug(d.logger).Log("tag-key", strutil.SanitizeLabelName(*t.Key), "tag-value", model.LabelValue(*t.Value))
+	}
 
+	// make this scan thru all labels
+	if srv.PublicIpAddress == nil {
+		level.Debug(d.logger).Log("msg", "PrivateIpAddress is null (instance is probably stopped with no static IP)")
+		nullMessage := "null"
+		srv.PublicIpAddress = &nullMessage
+	}
 	// END debug
-
-
 
 	// create targetgroup
 	tg := &targetgroup.Group{
