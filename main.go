@@ -16,6 +16,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -25,6 +26,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/lightsail"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/common/version"
 	"github.com/prometheus/prometheus/discovery/targetgroup"
@@ -37,6 +40,7 @@ var (
 	outputFile = a.Flag("output.file", "Output file for file_sd compatible file.").Default("lightsail_sd.json").String()
 	refresh    = a.Flag("target.refresh", "The refresh interval (in seconds).").Default("60").Int()
 	profile    = a.Flag("profile", "AWS Profile").Default("default").String()
+	listen     = a.Flag("web.listen-address", "The listen address.").Default(":8383").String()
 
 	logger log.Logger
 	sess   client.ConfigProvider
@@ -53,6 +57,38 @@ var (
 	tagLabel              = model.MetaLabelPrefix + "lightsail_tag_"
 )
 
+var (
+	reg             = prometheus.NewRegistry()
+	requestDuration = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Name:    "prometheus_lightsail_sd_request_duration_seconds",
+			Help:    "Histogram of latencies for requests to the AWS Lightsail API.",
+			Buckets: []float64{0.001, 0.01, 0.1, 0.5, 1.0, 2.0, 5.0, 10.0},
+		},
+	)
+	discoveredTargets = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "prometheus_lightsail_sd_discovered_targets",
+			Help: "Number of discovered lightsail targets",
+		},
+	)
+	requestFailures = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "prometheus_lightsail_sd_request_failures_total",
+			Help: "Total number of failed requests to the AWS Lightsail API.",
+		},
+	)
+)
+
+func init() {
+	reg.MustRegister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
+	reg.MustRegister(prometheus.NewGoCollector())
+	reg.MustRegister(version.NewCollector("prometheus_lightsail_sd"))
+	reg.MustRegister(requestDuration)
+	reg.MustRegister(discoveredTargets)
+	reg.MustRegister(requestFailures)
+}
+
 type lightsailDiscoverer struct {
 	client  *lightsail.Lightsail
 	refresh int
@@ -61,6 +97,12 @@ type lightsailDiscoverer struct {
 }
 
 func (d *lightsailDiscoverer) createTarget(srv *lightsail.Instance) *targetgroup.Group {
+	// handle case where instance is stopped, with no static public IP assigned
+	if srv.PublicIpAddress == nil {
+		nullMessage := "null"
+		srv.PublicIpAddress = &nullMessage
+	}
+
 	// create targetgroup
 	tg := &targetgroup.Group{
 		Source: fmt.Sprintf("lightsail/%s", *srv.Name),
@@ -96,11 +138,15 @@ func (d *lightsailDiscoverer) createTarget(srv *lightsail.Instance) *targetgroup
 }
 
 func (d *lightsailDiscoverer) getTargets() ([]*targetgroup.Group, error) {
+	now := time.Now()
 	srvs, err := d.client.GetInstances(nil)
+	requestDuration.Observe(time.Since(now).Seconds())
 	if err != nil {
+		requestFailures.Inc()
 		return nil, err
 	}
 
+	discoveredTargets.Set(float64(len(srvs.Instances)))
 	level.Debug(d.logger).Log("msg", "get servers", "count", len(srvs.Instances))
 
 	current := make(map[string]struct{})
@@ -194,5 +240,10 @@ func main() {
 	sdAdapter := NewAdapter(ctx, *outputFile, "lightsailSD", disc, logger)
 	sdAdapter.Run()
 
-	<-ctx.Done()
+	level.Debug(logger).Log("msg", "listening for connections", "addr", *listen)
+	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+	if err := http.ListenAndServe(*listen, nil); err != nil {
+		level.Debug(logger).Log("msg", "failed to listen", "addr", *listen, "err", err)
+		os.Exit(1)
+	}
 }

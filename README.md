@@ -120,6 +120,20 @@ string with the format of "${lightsail_account_id}/${instance_id}". This string 
 ${instance_id} value is assigned to the `instance_id` meta label.
 ```
 
+## Building
+
+`promu` is used for building (https://github.com/prometheus/promu):
+
+Build current arch:
+```
+promu build
+```
+
+Build all archs under `.promu.yml`:
+```
+promu crossbuild
+```
+
 ## Contributing
 
 Pull requests, issues and suggestions are appreciated.
