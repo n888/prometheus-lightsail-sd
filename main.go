@@ -37,11 +37,12 @@ import (
 )
 
 var (
-	a          = kingpin.New("prometheus-lightsail-sd", "Tool to generate file_sd target files for AWS Lightsail.")
-	outputFile = a.Flag("output.file", "Output file for file_sd compatible file.").Default("lightsail_sd.json").String()
-	refresh    = a.Flag("target.refresh", "The refresh interval (in seconds).").Default("60").Int()
-	profile    = a.Flag("profile", "AWS Profile").Default("").String()
-	listen     = a.Flag("web.listen-address", "The listen address.").Default(":8383").String()
+	a           = kingpin.New("prometheus-lightsail-sd", "Tool to generate file_sd target files for AWS Lightsail.")
+	outputFile  = a.Flag("output.file", "Output file for file_sd compatible file.").Default("lightsail_sd.json").String()
+	refresh     = a.Flag("target.refresh", "The refresh interval (in seconds).").Default("60").Int()
+	profile     = a.Flag("profile", "AWS Profile").Default("").String()
+	listen      = a.Flag("web.listen-address", "The listen address.").Default(":8383").String()
+	metricsPath = a.Flag("web.telemetry-path", "Path under which to expose metrics.").Default("/metrics").String()
 
 	logger log.Logger
 	sess   client.ConfigProvider
@@ -252,7 +253,16 @@ func main() {
 	sdAdapter.Run()
 
 	level.Debug(logger).Log("msg", "listening for connections", "addr", *listen)
-	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+	http.Handle(*metricsPath, promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`<html>
+		<head><title>prometheus-lightsail-sd</title></head>
+		<body>
+		<h1>prometheus-lightsail-sd</h1>
+		<p><a href="` + *metricsPath + `">Metrics</a></p>
+		</body>
+		</html>`))
+	})
 	if err := http.ListenAndServe(*listen, nil); err != nil {
 		level.Debug(logger).Log("msg", "failed to listen", "addr", *listen, "err", err)
 		os.Exit(1)
