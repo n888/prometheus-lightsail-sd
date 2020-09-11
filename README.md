@@ -28,7 +28,7 @@ When using AWS credentials or IAM Roles, the following policy needs to be attach
 
 ### 2) AWS Credentials
 
-* After attaching the policy above to Provide AWS credentials using one of the three options:
+* After attaching the policy above to the target object, authenticate using one of the three options:
 
 #### 2a) AWS Named Profile
 
