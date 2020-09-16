@@ -148,7 +148,7 @@ func (d *lightsailDiscoverer) getTargets() ([]*targetgroup.Group, error) {
 		return nil, err
 	}
 
-	// create targetgroup from instances
+	// create targetgroups from instances
 	discoveredTargets.Set(float64(len(srvs.Instances)))
 	level.Debug(d.logger).Log("msg", "get servers", "count", len(srvs.Instances))
 
