@@ -6,18 +6,9 @@ Service discovery for the [AWS Lightsail](https://aws.amazon.com/lightsail/) pla
 This service gets the list of servers from the Lightsail API and generates a file which is compatible with the Prometheus `file_sd` mechanism.
 
 ## Pre-requisites
+### 1) IAM Policy
 
-### AWS named profile
-You will need an AWS named profile config located under ~/.aws/config and ~/.aws/credentials.
-
-The profile name can be specified with either:
-* command line argument `--profile=myProfileName`
-* setting the environment variable `AWS_PROFILE=myProfileName`
-
-More info: [AWS CLI - Named Profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html)
-
-### IAM policy
-The following IAM Policy needs to be attached to the named profile configured via the previous step:
+When using AWS credentials or IAM Roles, the following policy needs to be attached to the object:
 ```
 {
     "Version": "2012-10-17",
@@ -34,6 +25,30 @@ The following IAM Policy needs to be attached to the named profile configured vi
     ]
 }
 ```
+
+### 2) AWS Credentials
+
+* After attaching the policy above to the target object, authenticate using one of the three options:
+
+#### 2a) AWS Named Profile
+
+To use an AWS named profile, your profile config should be defined under `~/.aws/config` and `~/.aws/credentials`.
+
+The profile name can be specified with either:
+* Command line argument `--profile=myProfileName`
+* Setting the environment variables `AWS_PROFILE=myProfileName` & `AWS_REGION=us-east-1`
+
+More info: [AWS CLI - Named Profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html)
+
+#### 2b) AWS IAM Key via Environment Variables
+
+Set AWS IAM Key values via environment variables:
+* Set the environment variables `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY=EXAMPLEKEY` & `AWS_REGION=us-east-1`
+
+#### 2c) IAM Role attached to instance
+
+This tool supports AWS IAM Roles attached to instances, ie. running in EC2/ECS/etc.
+* Note: Lightsail instances do not support IAM Roles, so you must use steps `2a` or `2b`.
 
 ## Installing it
 

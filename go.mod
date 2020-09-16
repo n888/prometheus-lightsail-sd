@@ -3,7 +3,7 @@ module github.com/n888/prometheus-lightsail-sd
 go 1.13
 
 require (
-	github.com/aws/aws-sdk-go v1.31.12
+	github.com/aws/aws-sdk-go v1.34.20
 	github.com/go-kit/kit v0.10.0
 	github.com/prometheus/client_golang v1.6.0
 	github.com/prometheus/common v0.10.0

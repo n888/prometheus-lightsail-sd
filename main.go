@@ -21,6 +21,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/lightsail"
@@ -36,11 +37,12 @@ import (
 )
 
 var (
-	a          = kingpin.New("prometheus-lightsail-sd", "Tool to generate file_sd target files for AWS Lightsail.")
-	outputFile = a.Flag("output.file", "Output file for file_sd compatible file.").Default("lightsail_sd.json").String()
-	refresh    = a.Flag("target.refresh", "The refresh interval (in seconds).").Default("60").Int()
-	profile    = a.Flag("profile", "AWS Profile").Default("default").String()
-	listen     = a.Flag("web.listen-address", "The listen address.").Default(":8383").String()
+	a           = kingpin.New("prometheus-lightsail-sd", "Tool to generate file_sd target files for AWS Lightsail.")
+	outputFile  = a.Flag("output.file", "Output file for file_sd compatible file.").Default("lightsail_sd.json").String()
+	refresh     = a.Flag("target.refresh", "The refresh interval (in seconds).").Default("60").Int()
+	profile     = a.Flag("profile", "AWS Profile").Default("").String()
+	listen      = a.Flag("web.listen-address", "The listen address.").Default(":8383").String()
+	metricsPath = a.Flag("web.telemetry-path", "Path under which to expose metrics.").Default("/metrics").String()
 
 	logger log.Logger
 	sess   client.ConfigProvider
@@ -141,11 +143,12 @@ func (d *lightsailDiscoverer) getTargets() ([]*targetgroup.Group, error) {
 	now := time.Now()
 	srvs, err := d.client.GetInstances(nil)
 	requestDuration.Observe(time.Since(now).Seconds())
+
 	if err != nil {
-		requestFailures.Inc()
 		return nil, err
 	}
 
+	// create targetgroups from instances
 	discoveredTargets.Set(float64(len(srvs.Instances)))
 	level.Debug(d.logger).Log("msg", "get servers", "count", len(srvs.Instances))
 
@@ -167,7 +170,6 @@ func (d *lightsailDiscoverer) getTargets() ([]*targetgroup.Group, error) {
 	}
 
 	d.lasts = current
-
 	return tgs, nil
 }
 
@@ -177,6 +179,10 @@ func (d *lightsailDiscoverer) Run(ctx context.Context, ch chan<- []*targetgroup.
 
 		if err == nil {
 			ch <- tgs
+		} else {
+			// increment failure metric
+			requestFailures.Inc()
+			level.Error(logger).Log("msg", "error fetching targets", "err", err)
 		}
 
 		// wait for ticker or exit when ctx is closed
@@ -191,7 +197,6 @@ func (d *lightsailDiscoverer) Run(ctx context.Context, ch chan<- []*targetgroup.
 
 func main() {
 	a.HelpFlag.Short('h')
-
 	a.Version(version.Print("prometheus-lightsail-sd"))
 
 	logger = log.NewSyncLogger(log.NewLogfmtLogger(os.Stdout))
@@ -203,10 +208,15 @@ func main() {
 		return
 	}
 
-	// use aws named profile if specified, otherwise use session.SharedConfig
+	// use aws named profile if specified, otherwise use NewSession()
 	if *profile != "" {
 		level.Debug(logger).Log("msg", "loading profile: "+*profile)
 		sess, err = session.NewSessionWithOptions(session.Options{
+			Config: aws.Config{
+				MaxRetries:                    aws.Int(3),
+				CredentialsChainVerboseErrors: aws.Bool(true),
+				HTTPClient:                    &http.Client{Timeout: 10 * time.Second},
+			},
 			Profile:           *profile,
 			SharedConfigState: session.SharedConfigEnable,
 		})
@@ -215,9 +225,11 @@ func main() {
 			return
 		}
 	} else {
-		level.Debug(logger).Log("msg", "loading shared config: "+*profile)
-		sess, err = session.NewSessionWithOptions(session.Options{
-			SharedConfigState: session.SharedConfigEnable,
+		level.Debug(logger).Log("msg", "loading shared config")
+		sess, err = session.NewSession(&aws.Config{
+			MaxRetries:                    aws.Int(3),
+			CredentialsChainVerboseErrors: aws.Bool(true),
+			HTTPClient:                    &http.Client{Timeout: 10 * time.Second},
 		})
 		if err != nil {
 			level.Error(logger).Log("msg", "error creating session", "err", err)
@@ -241,7 +253,16 @@ func main() {
 	sdAdapter.Run()
 
 	level.Debug(logger).Log("msg", "listening for connections", "addr", *listen)
-	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+	http.Handle(*metricsPath, promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`<html>
+		<head><title>prometheus-lightsail-sd</title></head>
+		<body>
+		<h1>prometheus-lightsail-sd</h1>
+		<p><a href="` + *metricsPath + `">Metrics</a></p>
+		</body>
+		</html>`))
+	})
 	if err := http.ListenAndServe(*listen, nil); err != nil {
 		level.Debug(logger).Log("msg", "failed to listen", "addr", *listen, "err", err)
 		os.Exit(1)
