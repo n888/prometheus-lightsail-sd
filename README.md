@@ -43,7 +43,10 @@ More info: [AWS CLI - Named Profiles](https://docs.aws.amazon.com/cli/latest/use
 #### 2b) AWS IAM Key via Environment Variables
 
 Set AWS IAM Key values via environment variables:
-* Set the environment variables `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY=EXAMPLEKEY` & `AWS_REGION=us-east-1`
+* Set the environment variables:
+  * `AWS_ACCESS_KEY_ID`
+  * `AWS_SECRET_ACCESS_KEY=EXAMPLEKEY`
+  * `AWS_REGION=us-east-1`
 
 #### 2c) IAM Role attached to instance
 
