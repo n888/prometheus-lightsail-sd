@@ -60,7 +60,7 @@ Download the binary from the [Releases](https://github.com/n888/prometheus-light
 ## Running it
 
 ```
-usage: prometheus-lightsail-sd usage [<flags>]
+usage: prometheus-lightsail-sd [<flags>]
 
 Tool to generate file_sd target files for AWS Lightsail.
 
@@ -69,7 +69,12 @@ Flags:
       --output.file="lightsail_sd.json"  
                            Output file for file_sd compatible file.
       --target.refresh=60  The refresh interval (in seconds).
-      --profile="default"  AWS config named profile (under ~/.aws, can also be set by envvar: AWS_PROFILE=myProfileName)
+      --profile=""         AWS Profile
+      --web.listen-address=":8383"  
+                           The listen address.
+      --web.telemetry-path="/metrics"  
+                           Path under which to expose metrics.
+      --version            Show application version.
 ```
 
 ### Example output:
