@@ -41,7 +41,7 @@ var (
 	outputFile  = a.Flag("output.file", "Output file for file_sd compatible file.").Default("lightsail_sd.json").String()
 	refresh     = a.Flag("target.refresh", "The refresh interval (in seconds).").Default("60").Int()
 	profile     = a.Flag("profile", "AWS Profile").Default("").String()
-	listen      = a.Flag("web.listen-address", "The listen address.").Default(":8383").String()
+	listen      = a.Flag("web.listen-address", "The listen address.").Default(":9888").String()
 	metricsPath = a.Flag("web.telemetry-path", "Path under which to expose metrics.").Default("/metrics").String()
 
 	logger log.Logger

@@ -12,7 +12,7 @@ RUN adduser -u 888 -D prometheus && \
     chown prometheus:prometheus /home/prometheus/.aws \
                                 /var/prometheus-lightsail-sd
 
-EXPOSE     8383
+EXPOSE     9888
 USER       prometheus
 VOLUME     ["/home/prometheus/.aws"]
 
