@@ -1,4 +1,4 @@
-![](https://img.shields.io/docker/pulls/n888/prometheus-lightsail-sd.svg) ![](https://img.shields.io/docker/v/n888/prometheus-lightsail-sd?label=docker)
+![](https://img.shields.io/docker/pulls/n888/prometheus-lightsail-sd.svg) ![](https://img.shields.io/docker/v/n888/prometheus-lightsail-sd?label=tag)
 
 # prometheus-lightsail-sd
 Service discovery for the [AWS Lightsail](https://aws.amazon.com/lightsail/) platform, compatible with [Prometheus](https://prometheus.io).
