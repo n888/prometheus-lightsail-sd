@@ -1,14 +1,18 @@
-FROM alpine:3.12
+ARG BASE="alpine:3.12"
+FROM ${BASE}
 
-ARG TARGETOS="linux"
-ARG TARGETARCH="amd64"
+ARG TARGETOS
+ARG TARGETARCH
 
-COPY ./prometheus-lightsail-sd /bin/prometheus-lightsail-sd
+USER root
 
-RUN adduser -u 888 -D prometheus       && \
-    mkdir /home/prometheus/.aws        && \
+COPY .build/${TARGETOS}-${TARGETARCH}/prometheus-lightsail-sd /bin/prometheus-lightsail-sd
+
+RUN hostname -f
+RUN adduser -u 888 -D prometheus && \
+    mkdir /home/prometheus/.aws && \
     mkdir /var/prometheus-lightsail-sd && \
-    chown prometheus:prometheus /home/prometheus/.aws /var/prometheus-lightsail-sd
+    chown 888:888 /home/prometheus/.aws /var/prometheus-lightsail-sd
 
 EXPOSE     9888
 USER       prometheus
