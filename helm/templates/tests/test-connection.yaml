@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "prometheus-lightsail-sd.fullname" . }}-test-connection"
+  labels:
+{{ include "prometheus-lightsail-sd.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args:  ['{{ include "prometheus-lightsail-sd.fullname" . }}:{{ .Values.service.port }}']
+  restartPolicy: Never
