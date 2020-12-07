@@ -11,12 +11,12 @@ COPY .build/${TARGETOS}-${TARGETARCH}/prometheus-lightsail-sd /bin/prometheus-li
 RUN hostname -f
 RUN adduser -u 888 -D prometheus && \
     mkdir /home/prometheus/.aws && \
-    mkdir /var/prometheus-lightsail-sd && \
-    chown 888:888 /home/prometheus/.aws /var/prometheus-lightsail-sd
+    mkdir /prometheus-lightsail-sd && \
+    chown nobody:nogroup /prometheus-lightsail-sd
 
+USER       nobody
 EXPOSE     9888
-USER       prometheus
-VOLUME     ["/home/prometheus/.aws"]
-
+VOLUME     ["/prometheus-lightsail-sd"]
+WORKDIR    /prometheus-lightsail-sd
 ENTRYPOINT ["/bin/prometheus-lightsail-sd"]
-CMD        ["--output.file=/var/prometheus-lightsail-sd/lightsail_sd.json"]
+CMD        ["--output.file=/prometheus-lightsail-sd/lightsail_sd.json"]
