@@ -8,7 +8,6 @@ USER root
 
 COPY .build/${TARGETOS}-${TARGETARCH}/prometheus-lightsail-sd /bin/prometheus-lightsail-sd
 
-RUN hostname -f
 RUN adduser -u 888 -D prometheus && \
     mkdir /home/prometheus/.aws && \
     mkdir /prometheus-lightsail-sd && \
