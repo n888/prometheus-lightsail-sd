@@ -3,7 +3,7 @@ This project has been integrated into https://github.com/prometheus/prometheus.
 
 https://github.com/prometheus/prometheus/pull/8693
 
-Thanks to the Prometheus Dev team.
+Thanks to the Prometheus Dev Team.
 
 [![n888/prometheus-lightsail-sd](https://img.shields.io/docker/pulls/n888/prometheus-lightsail-sd.svg)](https://hub.docker.com/r/n888/prometheus-lightsail-sd)
 [![n888/prometheus-lightsail-sd/tags](https://img.shields.io/docker/v/n888/prometheus-lightsail-sd?label=tag&color=green)](https://hub.docker.com/r/n888/prometheus-lightsail-sd/tags)
