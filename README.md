@@ -2,7 +2,7 @@
 Service discovery for the [AWS Lightsail](https://aws.amazon.com/lightsail/) platform, compatible with [Prometheus](https://prometheus.io).
 
 ## ❗ Deprecation Notice ❗
-This project has been integrated into upstream, as native service discovery: 
+This project has been integrated into upstream as Prometheus native service discovery: 
 
 * https://prometheus.io/docs/prometheus/latest/configuration/configuration/#lightsail_sd_config
 * https://github.com/prometheus/prometheus/pull/8693
